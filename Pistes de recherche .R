@@ -9,6 +9,18 @@ library(FactoMineR)
 library(explor)
 library(dplyr)
 
+############################################################################################
+# Je vais créer un lien Github pour que t'aies le code en direct quand je le modifie       #
+# qu'on n'ait pas à s'envoyer 15 mails                                                     #
+# Je vais voir si je peux t'ajouter en tant que collaboratrice du Github comme ça tu       #
+# pourras me demander d'appliquer les changements du code quand tu le modifieras et comme  #
+# ça on aura toujours le même code pour pas se perdre                                      #
+############################################################################################
+
+###############################################################################
+# LANCER LE SCRIPT INITIALISATION COMME CA  NOS VARIABLES AURONT LE MÊME NOM  #
+###############################################################################
+
 # On change le répertoire de travail : On va chercher le chemin dans le "plus" de fichier 
 setwd("~/Desktop/CPES 2 /Méthodes quantitatives /SEMESTRE 2 /R - Méthode quanti 13ème")
 
@@ -30,11 +42,10 @@ QB <- modify_if(QB, is.character, as.factor)
 # On veut supprimer les colonnes de time 
 QB <- select(QB, -ends_with("Time"))
 
-#LANCER LE SCRIPT INITIALISATION COMME CA ON A LE MËME NOM DE VARIABLES
-
 # Créer une base de données avec que les questions qui nous intéresse ----
 
 ## Base de variables intéressantes pour notre sujet ---- 
+
 Base_T <- subset(QB, select = c(freq_ballade, mobi_ext, senti_securite, gps, odeurs, bruits)) # T pour transport 
 # B07Q02 : GPS 
 # B07Q03 : odeurs 
@@ -48,6 +59,7 @@ Base_A <- subset(QB, select = c(sexe,quartier, age, rester, anciennete, professi
 
 
 # GÉRER B07Q01 ---- 
+
 # On créer une base de données avec les 7 variables de modalités de réponses 
 # Problème si je mets : Mode_transport <-  subset(QB, select = c(B07Q01[SQ001],B07Q01[SQ002]))
 # Problème n°2 : dans la base de données excel son nom est B07Q01[SQ001] mais dans R il ne reconnaît pas cette colonne => solution : mettre des ``
@@ -133,8 +145,140 @@ Mode_transport$reponses_rec3 <- Mode_transport$reponses_rec %>%
     "marche / vélo" = "OuiOuiNonNonNonNonNon"
   )
 
-# essayer d'avoir une base où il y aurait qu'une réponse genre juste la marche
+# Idée : essayer d'avoir une base où on aurait les effectifs pour une réponse -> je tenterai ça demain
+
+#La Base_T ----
+
+table(Base_T$odeurs, useNA="ifany") #très peu de beaucoup -> regrouper un peu et beaucoup ???
+table(Base_T$bruits, useNA="ifany") #variable m'a l'air ok, à réordonner
+table(Base_T$gps, useNA="ifany") # 1 seul toujours -> regrouper avec souvent ?
+table(Base_T$freq_ballade, useNA="ifany") #la variable est bonne, à réordonner
+table(Base_T$mobi_ext, useNA="ifany") #ok, à réordonner
+table(Base_T$senti_securite, useNA="ifany") # très peu de pas du tout et de pas vraiment par rapport au reste -> les regrouper ?
+
+##recodage des variables qui vont pas (sujet à changement) ----
+## Recodage de Base_T$odeurs
+Base_T$odeurs <- Base_T$odeurs %>%
+  fct_recode(
+    "Oui" = "Oui, beaucoup",
+    "Oui" = "Oui, un peu"
+  )
+
+## Recodage de Base_T$gps
+Base_T$gps <- Base_T$gps %>%
+  fct_recode(
+    "Souvent" = "Toujours"
+  )
+
+## Recodage de Base_T$senti_securite
+Base_T$senti_securite <- Base_T$senti_securite %>%
+  fct_recode(
+    "Pas vraiment" = "Pas du tout"
+  )
+
+#mtn :
+freq(Base_T$odeurs)
+freq(Base_T$gps)
+freq(Base_T$senti_securite)
+#c'est déjà mieux je pense pas qu'on puisse faire plus
+
+##réordonner les variables ----
+
+## Réordonnancement de Base_T$senti_securite
+Base_T$senti_securite <- Base_T$senti_securite %>%
+  fct_relevel(
+    "Pas vraiment", "La plupart du temps", "Tout le temps"
+  )
+
+## Réordonnancement de Base_T$bruits
+Base_T$bruits <- Base_T$bruits %>%
+  fct_relevel(
+    "Non, pas spécialement", "Oui, un peu", "Oui, beaucoup"
+  )
+
+## Réordonnancement de Base_T$freq_ballade
+Base_T$freq_ballade <- Base_T$freq_ballade %>%
+  fct_relevel(
+    "Jamais ou rarement", "Au moins une fois par mois", "Au moins une fois toutes les semaines",
+    "Tous les jours"
+  )
+
+## Réordonnancement de Base_T$mobi_ext
+Base_T$mobi_ext <- Base_T$mobi_ext %>%
+  fct_relevel(
+    "Non, rarement ou jamais", "Oui, quelques fois par mois", "Oui, une ou plusieurs fois par semaine",
+    "Oui, une ou plusieurs fois par jour"
+  )
+
+#ok pour la Base_T
+
+#la Base_A ----
+
+freq(Base_A$attachement) #il reste un 13 ???? -> en NA ou en 10 ?
+freq(Base_A$anciennete) #m'a l'air ok, bon après il y a vraiment des gens qui restent 70 ans au même endroit ??, recoder ?
+freq(Base_A$revenu) #14% de NA mais sinon ok, juste REORDONNER
+freq(Base_A$diplome) #ok, REORDONNER
+freq(Base_A$rester) #ok
+freq(Base_A$age) #recoder en quintiles je pense
+freq(Base_A$sexe) #ok, plus de femmes mais de 4,1% donc ça va
+freq(Base_A$activite) #peu de chômeurs mais sinon la variable est bien utilisable
+#pour profession on attendra le script des PCS en entier
+
+## Recodage des variables ----
+
+#pour attachement je sais pas trop quoi faire
+## Recodage de Base_A$attachement
 
 
-# les autres variables :
+#Recodage de l'âge en quintiles
+Base_A$age_quint <- quant.cut(Base_A$age, 5)
+freq(Base_A$age_quint) #le découpage est pas si mal et les catégories m'ont pas l'air si bizarres
+## Recodage de Base_A$age_quint
+Base_A$age_quint <- Base_A$age_quint %>%
+  fct_recode(
+    "14-20 ans" = "[14,20.4)",
+    "21-32 ans" = "[20.4,32)",
+    "33-46 ans" = "[32,46)",
+    "47-62 ans" = "[46,62.6)",
+    "63-87 ans" = "[62.6,87]"
+  )
+freq(Base_A$age_quint)
 
+#recodage de l'ancienneté ? (essai)
+Base_A$anciennete_rec <- quant.cut(Base_A$anciennete, 5)
+freq(Base_A$anciennete_rec) #les catégories m'ont l'air bien
+## Recodage de Base_A$anciennete_rec
+Base_A$anciennete_rec <- Base_A$anciennete_rec %>%
+  fct_recode(
+    "0 à 2,5 ans" = "[0,2.5)",
+    "2,5 à 6 ans" = "[2.5,6)",
+    "6 à 12 ans" = "[6,12)",
+    "13 à 23 ans" = "[12,23.6)",
+    "24 à 70 ans" = "[23.6,70]"
+  )
+freq(Base_A$anciennete_rec)
+
+##Réordonnancement des variables ----
+
+## Réordonnancement de Base_A$revenu
+Base_A$revenu <- Base_A$revenu %>%
+  fct_relevel(
+    "Moins de 1250 euros", "Entre 1250 et 2000 euros", "Entre 2000 et 3000 euros",
+    "Entre 3000 et 4500 euros", "Entre 4500 et 6000 euros", "Entre 6000 et 8000 euros",
+    "Plus de 8000 euros"
+  )
+
+## Réordonnancement de Base_A$diplome
+Base_A$diplome <- Base_A$diplome %>%
+  fct_relevel(
+    "Sans diplôme", "Inférieur au bac", "Bac", "Bac+2/+3", "Bac+5 et supérieur"
+  )
+
+freq(Base_A$anciennete_rec)
+freq(Base_A$revenu)
+freq(Base_A$diplome)
+freq(Base_A$age_quint)
+
+#Base_A ok
+
+#Idée -> séparer les scripts de recodage et d'analyse comme ça on se perd pas après comme tu le sens
