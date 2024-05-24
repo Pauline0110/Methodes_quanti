@@ -3,7 +3,7 @@
     "path": "~/GitHub/Methodes_quanti/Mémoire méthodes quanti/Pistes de recherche .R",
     "project_path": "Pistes de recherche .R",
     "type": "r_source",
-    "hash": "2041262504",
+    "hash": "647594523",
     "contents": "",
     "dirty": false,
     "created": 1716477803048.0,
@@ -12,15 +12,16 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "6,17",
-        "scrollLine": "0"
+        "cursorPosition": "402,0",
+        "scrollLine": "374",
+        "docOutlineVisible": "1"
     },
     "folds": "",
-    "lastKnownWriteTime": 1716477527,
+    "lastKnownWriteTime": 1716578929,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1716477527,
+    "last_content_update": 1716578929241,
     "read_only": false,
     "read_only_alternatives": []
 }
