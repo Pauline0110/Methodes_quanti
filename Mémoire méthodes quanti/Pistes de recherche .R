@@ -18,7 +18,7 @@ library(dplyr)
 ############################################################################################
 
 ###############################################################################
-# LANCER LE SCRIPT INITIALISATION COMME CA NOS VARIABLES AURONT LE MÊME NOM   #
+# LANCER LES SCRIPTS INITIALISATION COMME CA NOS VARIABLES AURONT LE MÊME NOM #
 ###############################################################################
 
 # On change le répertoire de travail : On va chercher le chemin dans le "plus" de fichier 
