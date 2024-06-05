@@ -1,26 +1,26 @@
 {
-    "id": "7FA27639",
+    "id": "C9C7F15C",
     "path": "~/GitHub/Methodes_quanti/Mémoire méthodes quanti/QB - Importer, organiser et nettoyer la base de données.R",
     "project_path": "QB - Importer, organiser et nettoyer la base de données.R",
     "type": "r_source",
-    "hash": "3711759960",
+    "hash": "0",
     "contents": "",
     "dirty": false,
-    "created": 1717245194465.0,
+    "created": 1717515683528.0,
     "source_on_save": false,
     "relative_order": 1,
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "22,36",
-        "scrollLine": "0"
+        "cursorPosition": "98,63",
+        "scrollLine": "69"
     },
     "folds": "",
-    "lastKnownWriteTime": 1717245481,
+    "lastKnownWriteTime": 1717514267,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1717245481806,
+    "last_content_update": 1717514267,
     "read_only": false,
     "read_only_alternatives": []
 }

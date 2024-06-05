@@ -1,3 +1,8 @@
+###########################################################
+# Ce script nécessite le lancement du script suivant :    #
+# QB - Importer, organiser et nettoyer la base de données #
+###########################################################
+
 ####    Corriger les erreurs de codage ----
 
 ###      Éliminer les valeurs aberrantes des variables numériques
