@@ -1,0 +1,864 @@
+##############################################################
+# Ce script nécessite le lancement du script suivant :       #
+# 02_QB - Importer, organiser et nettoyer la base de données #
+##############################################################
+
+####    Corriger les erreurs de codage ----
+
+###      Éliminer les valeurs aberrantes des variables numériques
+
+##      Variable "anciennete"
+QB$anciennete <- QB$anciennete %>%
+        as.character() %>%
+        fct_recode(
+                "0.5" = "-1",
+                "11" = "2013"
+        ) %>%
+        as.character() %>%
+        as.numeric()
+
+##      Variable "attachement"
+QB$attachement <- QB$attachement %>%
+        as.character() %>%
+        fct_recode(
+                "6.5" = "65", 
+                "10" = "13"
+        ) %>%
+        as.character() %>%
+        as.numeric()
+
+###     Simplifier la variable "diplome"
+QB$diplome <- QB$diplome %>%
+        fct_recode(
+                NULL = "Autre",
+                "Bac" = "Bac général, technologique",
+                "Bac" = "Bac pro, CAP",
+                "Inférieur au bac" = "Brevet",
+                "Inférieur au bac" = "Certificat d'études",
+                "Bac+2/+3" = "DEUG/BTS",
+                "Bac+5 et supérieur" = "Doctorat",
+                "Bac+2/+3" = "Licence",
+                "Bac+5 et supérieur" = "Master/Maîtrise/DEA"
+        )
+
+#### Ajouter des variables à la base de données ----
+
+### Créer une variable "application" aux modalités online/offline
+QB$application <- QB$binome %>%
+        fct_recode(
+                "Offline" = "B01",
+                "Offline" = "B02",
+                "Offline" = "B03",
+                "Offline" = "B04",
+                "Offline" = "B05",
+                "Offline" = "B06",
+                "Offline" = "B07",
+                "Offline" = "B08",
+        ) %>%
+        fct_explicit_na("Online")
+
+### Créer une variable revenu avec indication du centre
+QB$revenu_centres <- QB$revenu %>%
+        fct_recode(
+                "1625" = "Entre 1250 et 2000 euros",
+                "2500" = "Entre 2000 et 3000 euros",
+                "3750" = "Entre 3000 et 4500 euros",
+                "5250" = "Entre 4500 et 6000 euros",
+                "7000" = "Entre 6000 et 8000 euros",
+                "625" = "Moins de 1250 euros",
+                "10000" = "Plus de 8000 euros"
+        ) %>%
+        as.character() %>%
+        as.numeric()
+
+#### Renommer les variables
+
+QB <- rename(QB, "soc_agglo" = B04Q01, "soc_habitat" = B04Q02, 
+             "emena_etud" = B06Q01, "emena_retraite" = B06Q02, 
+             "emena_travail" = B06Q03, "emena_famille" = B06Q04, 
+             "famille_quartier" = B05Q01, "lieu_travail" = B05Q03, 
+             "mobi_ext" = B05Q06, "scolarite_quartier" = B01Q03, "senti_securite" = B03Q05, 
+             "enfants" = B01Q05, "parent_eleve" = B01Q07, "odeurs" = B07Q03, 
+             "bruits" = B07Q04, "origines_asie" = B08Q02, "nationalite" = B08Q03, 
+             "amis_quartier" = B05Q02, 
+             "freq_cafes" = B05Q04,  
+             "freq_ballade" = B04Q03, 
+             "invitation_voisins" = B03Q04, 
+             "activite_periscol" = B01Q10, "gps" = B07Q02, 
+             "conseils_quartier" = B02Q02, "trottinettes" = B02Q05, 
+             "nom_maire" = B02Q03, "nouvel_an" = B08Q06)
+
+#### Recoder le nom du quartier pour obtenir le quartier "subjectif" ----
+
+### On uniformise la typographie
+QB$quartier_subj <- str_to_lower(QB$quartier)
+QB$quartier_subj <- as.factor(QB$quartier_subj)
+
+### On recode au plus près
+QB$quartier_subj <- QB$quartier_subj %>%
+        fct_recode(
+                "13e" = "13",
+                "13e" = "13 e",
+                "13e" = "13 eme",
+                "13e" = "13 ème arrondissement vers le 5ème",
+                "Place d'Italie" = "13 ème place d'italie",
+                "Croulebarbe" = "13e arrondissement- quartier croulebarbe",
+                "Quartier de la gare" = "13e arrondissement - quartier de la gare",
+                "13e" = "13e arrondissement de paris",
+                "Butte-aux-Cailles" = "13e arrondissement, au pied de la butte aux cailles",
+                "Métro Corvisart" = "13e arrondissement, métro corvisart et gobelin et place d'italie",
+                "Avenue d'Italie" = "13e avenue d'italie",
+                "13e" = "13eme",
+                "Rue Tolbiac" = "13eme - rue tolbiac",
+                "13e" = "13eme arrondissement",
+                "Rue Tolbiac" = "35 rue de  tolbiac ( j’ai déménagé récemment)",
+                "Arago" = "arago",
+                "Arago-Glacière" = "arago - glaciere",
+                "Austerlitz" = "austerlitz",
+                "Avenue d'Italie" = "avenue d’italie",
+                "Choisy" = "avenue de choisy",
+                "Butte-aux-Cailles" = "bas de la buttes aux cailles",
+                "Blanqui" = "blanqui",
+                "BNF" = "bnf",
+                "Boulevard Blanqui" = "boulevard blanqui",
+                "Boulevard Vincent Auriol" = "boulevard vincent auriol",
+                "Butte-aux-Cailles" = "butte-au-cailles",
+                "Butte-aux-Cailles" = "butte-aux-cailles",
+                "Butte-aux-Cailles" = "butte aux cailles",
+                "Château-des-Rentiers" = "château des rentiers",
+                "Quartier chinois" = "chinois",
+                "Salpêtrière" = "Sapêtrière",
+                "Choisy" = "choisy",
+                "Croulebarbe" = "croulbarbe",
+                "Croulebarbe" = "croulebarbe",
+                "13e" = "dans le 13e arrondissement",
+                NULL = "david fouet",
+                NULL = "entre le parc montsouris et la butte aux cailles",
+                "Gare d'Austerlitz" = "gare d'austerlitz",
+                "Glacière" = "glacière",
+                "Gobelins" = "gobelins",
+                "Italie" = "italie",
+                "Ivry" = "ivry",
+                "Jeanne d'Arc" = "jeanne d'arc",
+                "Jeanne d'Arc" = "jeanne d’arc",
+                "Jeanne d'Arc" = "jeanne d’atc",
+                NULL = "juste à côté",
+                "Butte-aux-Cailles" = "la butte aux cailles",
+                "Porte de Choisy" = "le 13eme, porte de choisy",
+                "13e" = "le meilleur 13e",
+                "Rue Glacière" = "le quartier autour de la rue de la glacière",
+                "13e" = "le quartier entre la butte aux cailles et le parc montsouris, 13e arrondissement",
+                "Gobelins" = "les gobelins",
+                "Olympiades" = "les olympiades",
+                "Maison-Blanche" = "maison-blanche",
+                "Maison-Blanche" = "maison blanche",
+                "Quartier chinois" = "massena, quartier chinois",
+                "Métro Nationale" = "métro national",
+                "Métro Tolbiac" = "métro tolbiac",
+                "13e" = "mon 13",
+                "Montsouris" = "montsouris",
+                "Nationale" = "nationale",
+                "Olympiades" = "olympiade",
+                "Olympiades" = "olympiades",
+                "Olympiades" = "olympiades, dans le 13e arrondissement",
+                NULL = "omelia",
+                "13e" = "paris 13",
+                "13e" = "paris 13eme",
+                "Passage Trubert-Bellier" = "passage trubert bellier",
+                "Peupliers" = "peuplier",
+                "Peupliers" = "peupliers",
+                "Pitié-Salpêtrière" = "pitié salpetriere",
+                "Place d'Italie" = "place d'it",
+                "Place d'Italie" = "place d'italie",
+                "Place d'Italie" = "place d'italie -butte aux cailles",
+                "Place d'Italie" = "place d’it",
+                "Place d'Italie" = "place d’italie",
+                "Place de Rungis" = "place de reingis",
+                "Place de Rungis" = "place de rungis",
+                "Place de Jeanne d'Arc" = "place jeanne d'arc",
+                "Place Nationale" = "place nationale",
+                "Place Pinel" = "place pinalle",
+                "Port Royal" = "port royal",
+                "Porte d'Italie" = "porte d'italie",
+                "Porte d'Italie" = "porte d’italie",
+                "Porte de Choisy" = "porte de choisy",
+                "Poterne des Peupliers" = "poterne des peupliers",
+                "Boulevard Port Royal" = "près du boulevard port royal",
+                "Parc Kellerman" = "près du parc kellerman",
+                "Quai de la gare" = "quai de la gare",
+                "Butte-aux-Cailles" = "quartier butte aux cailles",
+                "Quartier chinois" = "quartier chinois",
+                "Quartier de la gare" = "quartier de la gare",
+                "Quartier de la gare" = "quartier de la gare / bnf et auparavant olympiades",
+                "Peupliers" = "quartier des peupliers",
+                "Peupliers" = "quartier des peupliers/place de rungis",
+                "Rue Clisson" = "rue clisson",
+                "Rue Glacière" = "rue glaciere",
+                "Rue Lahire" = "rue lahire",
+                "Rue Nationale" = "rue nationale, paris 75013",
+                "Rue Tolbiac" = "rue tolbiac, paris 75013",
+                "Rungis" = "rungis",
+                "Saint-Hyppolite" = "saint hypolite",
+                "Salpêtrière" = "salpêtrière",
+                "Salpêtrière" = "salpetriere - bnf",
+                "Tolbiac" = "tolbiac",
+                NULL = "tutokio",
+                "Quartier vietnamien" = "vietnamien",
+                "13e" = "xiiie arrondissement", 
+                "Butte-aux-Cailles" = "13e butte aux cailles",
+                "Quartier asiatique" = "asiatique",
+                "Corvisard" = "corvisard",
+                "13e" = "le 13",
+                "Quartier chinois" = "le quartier chinois",
+                "13e" = "l13e",
+                "Peupliers" = "les peupliers",
+                "Masséna" = "masséna",
+                "Pitié-Salpêtrière" = "Pitié-Salpétrière",
+                "Port-Royal" = "Port Royal",
+                "Boulevard Port-Royal" = "Boulevard Port Royal",
+                "Quartier asiatique" = "quartier asiatique",
+                "Salpêtrière" = "quartier de la salpêtrière",
+                "Poterne des Peupliers" = "quartier poterne des peupliers",
+                "Rue de la colonie" = "rue de la colonie",
+                "BNF" = "vers bibliothèque mitterand"
+        )
+
+## On affine le recodage
+QB$quartier_subj <- QB$quartier_subj %>%
+        fct_recode(
+                "Tolbiac" = "Rue Tolbiac",
+                "Gare d'Austerlitz" = "Austerlitz",
+                "Blanqui" = "Boulevard Blanqui",
+                "Vincent Auriol" = "Boulevard Vincent Auriol",
+                "Glacière" = "Rue Glacière",
+                "13e" = "l13e",
+                "Nationale" = "Métro Nationale",
+                "Tolbiac" = "Métro Tolbiac",
+                "Salpêtrière" = "Pitié-Salpêtrière",
+                "Rungis" = "Place de Rungis",
+                "Jeanne d'Arc" = "Place de Jeanne d'Arc",
+                "Nationale" = "Place Nationale",
+                "Pinel" = "Place Pinel",
+                "Peupliers" = "Poterne des Peupliers",
+                "Port-Royal" = "Boulevard Port Royal",
+                "Clisson" = "Rue Clisson",
+                "Lahire" = "Rue Lahire",
+                "Nationale" = "Rue Nationale",
+                "Quartier asiatique" = "Quartier vietnamien", 
+                "Quartier asiatique" = "Quartier chinois",
+                "Port-Royal" = "Port Royal"
+        )
+
+#### Recoder l'adresse pour obtenir le quartier "objectif" ----
+
+### On essaie de simplifier les adresse 
+QB$adresse <- str_to_lower(QB$adresse)
+QB$adresse <- as.factor(QB$adresse)
+
+### On crée une variable qui contient les informations relatives au quartier et 
+### à l'adresse : on se basera le plus souvent sur la première, mais en cas de
+### doutes, on se basera sur la seconde
+QB$quartier_cq <- paste(QB$quartier_subj, QB$adresse)
+
+### On recode en fonction de "quartier_rec2", en partant de l'hypothèse que les
+### habitants ne se sont pas trompés sur le nom de leur quartier. La fonction 
+### "str_detect" facilite le recodage. On prend pour référence les conseils de quartier. 
+QB$quartier_cq <- str_to_lower(QB$quartier_cq) #On uniformise la typo
+QB$quartier_cq[str_detect(QB$quartier_cq, "olympiades")==T] <- "Olympiades-Choisy"
+QB$quartier_cq[str_detect(QB$quartier_cq, "choisy")==T] <- "Olympiades-Choisy"
+QB$quartier_cq[str_detect(QB$quartier_cq, "butte-aux-cailles")==T] <- "Butte-aux-Cailles"
+QB$quartier_cq[str_detect(QB$quartier_cq, "croulebarbe")==T] <- "Croulebarbe"
+QB$quartier_cq[str_detect(QB$quartier_cq, "salpêtrière")==T] <- "Salpêtrière"
+QB$quartier_cq[str_detect(QB$quartier_cq, "austerlitz")==T] <- "Salpêtrière"
+QB$quartier_cq[str_detect(QB$quartier_cq, "porte de choisy")==T] <- "Olympiades-Choisy"
+QB$quartier_cq[str_detect(QB$quartier_cq, "peupliers")==T] <- "Peupliers-Rungis"
+QB$quartier_cq[str_detect(QB$quartier_cq, "rungis")==T] <- "Peupliers-Rungis"
+QB$quartier_cq[str_detect(QB$quartier_cq, "nationale")==T] <- "Masséna-Jeanne d'Arc"
+QB$quartier_cq[str_detect(QB$quartier_cq, "jeanne d'arc")==T] <- "Masséna-Jeanne d'Arc"
+QB$quartier_cq[str_detect(QB$quartier_cq, "avenue d'italie")==T] <- "Olympiades-Choisy"
+QB$quartier_cq[str_detect(QB$quartier_cq, "arago")==T] <- "Croulebarbe"
+QB$quartier_cq[str_detect(QB$quartier_cq, "port royal")==T] <- "Croulebarbe"
+QB$quartier_cq[str_detect(QB$quartier_cq, "ivry")==T] <- "Olympiades-Choisy"
+QB$quartier_cq[str_detect(QB$quartier_cq, "porte d'italie")==T] <- "Peupliers-Rungis"
+QB$quartier_cq[str_detect(QB$quartier_cq, "quai de la gare")==T] <- "BiblioSeine"
+
+## On recode manuellement en prenant pour base les conseils de quartier
+QB$quartier_cq <- QB$quartier_cq %>%
+        fct_recode(
+                "Peupliers-Rungis" = "13e 19 rue de l'interne löeb",
+                "Peupliers-Rungis" = "13e avenue d’italie",
+                NULL = "13e avenue des gobelins",
+                "Place d'Italie" = "13e avenue edisson",
+                "Butte-aux-Cailles" = "13e brillat savin",
+                "Salpêtrière" = "13e clisson",
+                "Croulebarbe" = "13e corvisare",
+                NULL = "13e de la colonie",
+                "Salpêtrière" = "13e docteur victor hutinel",
+                "Olympiades-Choisy" = "13e javelot",
+                NULL = "13e na",
+                "Peupliers-Rungis" = "13e place de l’abbe",
+                NULL = "13e richard lefourier",
+                "Place d'Italie" = "13e rue albert bayet",
+                NULL = "13e rue ambroise thomas",
+                "Butte-aux-Cailles" = "13e rue brillât savarin",
+                "Peupliers-Rungis" = "13e rue caillaux",
+                "Butte-aux-Cailles" = "13e rue de la providence",
+                "Croulebarbe" = "13e rue des cordelières",
+                "Croulebarbe" = "13e rue des tanneries",
+                "Masséna-Jeanne d'Arc" = "13e rue du château des rentiers",
+                NULL = "13e rue dunois",
+                "Masséna-Jeanne d'Arc" = "13e rue jean colly",
+                "Salpêtrière" = "13e rue le brun",
+                "Peupliers-Rungis" = "13e rue philibert lucot",
+                "Salpêtrière" = "13e rue pinel",
+                "Peupliers-Rungis" = "13e rue vergniaud",
+                NULL = "13e tolbiac",
+                "BiblioSeine" = "biblioseine",
+                NULL = "blanqui boulevard blanqui",
+                NULL = "blanqui na",
+                "BiblioSeine" = "bnf tolbiac",
+                "Masséna-Jeanne d'Arc" = "château-des-rentiers rue du château des rentiers",
+                "Salpêtrière" = "clisson na",
+                "Butte-aux-Cailles" = "glacière boulevard auguste blanqui",
+                "Butte-aux-Cailles" = "glacière rue de tolbiac",
+                "Croulebarbe" = "glacière rue edmon gondeinet",
+                NULL = "gobelins avenue des gobelins",
+                NULL = "gobelins boulevard auguste blanqui",
+                "Place d'Italie" = "gobelins edison",
+                NULL = "gobelins gobelins",
+                "Salpêtrière" = "gobelins rue de la reine blanche",
+                "Croulebarbe" = "gobelins rue des gobelins",
+                "Croulebarbe" = "gobelins rue des reculettes",
+                "Salpêtrière" = "gobelins rue du banquier",
+                "Salpêtrière" = "gobelins rue du jura",
+                "Salpêtrière" = "gobelins rue pinel",
+                "Salpêtrière" = "gobelins rue pirandello",
+                "Salpêtrière" = "gobelins véronèse",
+                NULL = "italie boulevard auguste blanqui",
+                "Masséna-Jeanne d'Arc" = "lahire lahire",
+                "Peupliers-Rungis" = "maison-blanche boulevard kellerman",
+                "Masséna-Jeanne d'Arc" = "maison-blanche boulevard masséna",
+                NULL = "maison-blanche na",
+                "Butte-aux-Cailles" = "maison-blanche rue barrault",
+                "Peupliers-Rungis" = "maison-blanche rue bourbon",
+                "Peupliers-Rungis" = "maison-blanche rue bourgon",
+                "Peupliers-Rungis" = "maison-blanche rue caillaux",
+                "Peupliers-Rungis" = "maison-blanche rue de l'interne löeb",
+                "Peupliers-Rungis" = "maison-blanche rue de la vistule",
+                "Peupliers-Rungis" = "maison-blanche rue des malmaisons",
+                "Peupliers-Rungis" = "maison-blanche rue dieulafoy",
+                "Peupliers-Rungis" = "maison-blanche rue du moulin-de-la-pointe",
+                "Peupliers-Rungis" = "maison-blanche rue du moulin de la pointe",
+                "Peupliers-Rungis" = "maison-blanche rue du tage",
+                "Peupliers-Rungis" = "maison-blanche rue gandon",
+                "Peupliers-Rungis" = "maison-blanche rue tagore",
+                "Croulebarbe" = "métro corvisart rue des reculettes",
+                "Butte-aux-Cailles" = "montsouris rue de l’amiral mouchez",
+                NULL = "na boulevard saint jacques",
+                NULL = "na david",
+                NULL = "na na",
+                NULL = "na rue de tolbiac",
+                "Butte-aux-Cailles" = "na rue vergniaud",
+                "Peupliers-Rungis" = "parc kellerman rue val-de-marne",
+                "Peupliers-Rungis" = "passage trubert-bellier passage trubert bellier",
+                "Masséna-Jeanne d'Arc" = "pinel place pinel",
+                "Peupliers-Rungis" = "place d'italie annie girardot",
+                "Place d'Italie" = "place d'italie baudricourt",
+                "Place d'Italie" = "place d'italie bd vincent auriol",
+                "Place d'Italie" = "place d'italie boulevard auriol",
+                "Place d'Italie" = "place d'italie boulevard vincent auriol",
+                "Place d'Italie" = "place d'italie edison",
+                NULL = "place d'italie na",
+                "Salpêtrière" = "place d'italie pinel",
+                "Butte-aux-Cailles" = "place d'italie rue alphand",
+                "Peupliers-Rungis" = "place d'italie rue bobillot",
+                NULL = "place d'italie rue daveil",
+                "Butte-aux-Cailles" = "place d'italie rue gérard",
+                "Salpêtrière" = "place d'italie rue godefroy",
+                "Peupliers-Rungis" = "place d'italie rue moulinet",
+                "Masséna-Jeanne d'Arc" = "place d'italie rue regnault",
+                "Peupliers-Rungis" = "place d'italie rue vandrezanne",
+                "Olympiades-Choisy" = "quartier asiatique des malmaisons",
+                NULL = "quartier asiatique haumont",
+                "Olympiades-Choisy" = "quartier asiatique pointe d’yvry",
+                "Olympiades-Choisy" = "quartier asiatique rue baudricourt",
+                "Peupliers-Rungis" = "quartier asiatique rue caillaux",
+                "Peupliers-Rungis" = "quartier asiatique rue de la vistule",
+                "Olympiades-Choisy" = "quartier asiatique rue des malmaisons",
+                "Peupliers-Rungis" = "quartier asiatique rue du moulin des prés",
+                "BiblioSeine" = "quartier de la gare dunois",
+                NULL = "quartier de la gare na",
+                NULL = "quartier de la gare rue albert",
+                "Salpêtrière" = "quartier de la gare rue clisson",
+                NULL = "quartier de la gare rue de domremy",
+                "Masséna-Jeanne d'Arc" = "quartier de la gare rue de patay",
+                "Croulebarbe" = "saint-hyppolite na",
+                "Masséna-Jeanne d'Arc" = "tolbiac jean colly",
+                "Masséna-Jeanne d'Arc" = "tolbiac marcel duchamp",
+                NULL = "tolbiac na",
+                "Peupliers-Rungis" = "tolbiac passage foubert",
+                "Peupliers-Rungis" = "tolbiac rue de la maison blanche",
+                NULL = "tolbiac rue de tolbiac",
+                "BiblioSeine" = "tolbiac rue des frigos",
+                "Peupliers-Rungis" = "tolbiac rue du moulinet",
+                "Peupliers-Rungis" = "tolbiac rue mallinet",
+                "Peupliers-Rungis" = "tolbiac rue toussaint féron",
+                "Peupliers-Rungis" = "maison-blanche rue bellier-dedouvre",
+                NULL = "tolbiac tolbiac",
+                NULL = "vincent auriol boulevard vincent", 
+                "Peupliers-Rungis" = "13e damesme",
+                "Masséna-Jeanne d'Arc" = "13e lahire",
+                NULL = "13e rue auguste blanqui",
+                "Butte-aux-Cailles" = "13e rue paulin mery",
+                NULL = "blanqui boulevard auguste blanqui",
+                "BiblioSeine" = "bnf na",
+                "Croulebarbe" = "corvisard corvisard",
+                NULL = "glacière rue de la glacière",
+                "Croulebarbe" = "gobelins rue berbier du mets",
+                "Salpêtrière" = "gobelins rue michel peter",
+                "Peupliers-Rungis" = "masséna avenue léon-bollée",
+                "Peupliers-Rungis" = "place d'italie avenue d’italie",
+                "Place d'Italie" = "place d'italie bobillot",
+                "Place d'Italie" = "place d'italie rue des deux avenues",
+                "Place d'Italie" = "place d'italie rue du moulinet",
+                "Salpêtrière" = "place d'italie rue rubens",
+                "Croulebarbe" = "port-royal rue de la santé",
+                "Masséna-Jeanne d'Arc" = "quartier asiatique 1 passage national",
+                NULL = "quartier asiatique na",
+                "Olympiades-Choisy" = "quartier asiatique rue du disque",
+                NULL = "quartier asiatique rue tolbiac",
+                NULL = "quartier asiatique tolbiac",
+                "BiblioSeine" = "quartier de la gare rue cantagrel",
+                NULL = "rue de la colonie rue de la colonie",
+                "Place d'Italie" = "tolbiac rue du docteur magnan",
+                NULL = "tolbiac rue tolbiac"
+        )
+QB$quartier_cq <- as.factor(QB$quartier_cq)
+
+## On recode l'adresse en se basant cette fois sur les quartiers administratifs
+QB$quartier_qa <- paste(QB$quartier_cq, QB$adresse)
+QB$quartier_qa[str_detect(QB$quartier_qa, "Olympiades-Choisy")==T] <- "Quartier de la gare"
+QB$quartier_qa[str_detect(QB$quartier_qa, "Peupliers-Rungis")==T] <- "Maison-Blanche"
+QB$quartier_qa[str_detect(QB$quartier_qa, "Croulebarbe")==T] <- "Croulebarbe"
+QB$quartier_qa[str_detect(QB$quartier_qa, "Masséna-Jeanne d'Arc")==T] <- "Quartier de la gare"
+QB$quartier_qa[str_detect(QB$quartier_qa, "Butte-aux-Cailles")==T] <- "Maison-Blanche"
+QB$quartier_qa[str_detect(QB$quartier_qa, "BiblioSeine")==T] <- "Quartier de la gare"
+
+## On recode pour les cq "Salpêtrière" et "Place d'Italie"
+QB$quartier_qa <- QB$quartier_qa %>%
+        fct_recode(
+                NULL = "NA avenue des gobelins",
+                NULL = "NA boulevard auguste blanqui",
+                NULL = "NA boulevard blanqui",
+                NULL = "NA boulevard saint jacques",
+                NULL = "NA boulevard vincent",
+                NULL = "NA david",
+                "Maison-Blanche" = "NA de la colonie",
+                NULL = "NA gobelins",
+                NULL = "NA haumont",
+                NULL = "NA NA",
+                NULL = "NA richard lefourier",
+                NULL = "NA rue albert",
+                NULL = "NA rue ambroise thomas",
+                NULL = "NA rue daveil",
+                NULL = "NA rue de domremy",
+                NULL = "NA rue de tolbiac",
+                "Quartier de la gare" = "NA rue dunois",
+                NULL = "NA tolbiac",
+                "Quartier de la gare" = "Place d'Italie avenue edisson",
+                "Quartier de la gare" = "Place d'Italie baudricourt",
+                NULL = "Place d'Italie bd vincent auriol",
+                NULL = "Place d'Italie boulevard auriol",
+                NULL = "Place d'Italie boulevard vincent auriol",
+                "Quartier de la gare" = "Place d'Italie edison",
+                "Quartier de la gare" = "Place d'Italie rue albert bayet",
+                "Salpêtrière" = "Salpêtrière boulevard hopital",
+                "Quartier de la gare" = "Salpêtrière louise weiss",
+                "Salpêtrière" = "Salpêtrière paul klee",
+                "Salpêtrière" = "Salpêtrière pinel",
+                "Salpêtrière" = "Salpêtrière pirandello",
+                "Quartier de la gare" = "Salpêtrière rue clisson",
+                "Quartier de la gare" = "Salpêtrière rue danois",
+                "Salpêtrière" = "Salpêtrière rue de la reine blanche",
+                "Salpêtrière" = "Salpêtrière rue du banquier",
+                "Salpêtrière" = "Salpêtrière rue du jura",
+                "Quartier de la gare" = "Salpêtrière rue dunois",
+                "Salpêtrière" = "Salpêtrière rue godefroy",
+                "Salpêtrière" = "Salpêtrière rue louise weiss",
+                "Quartier de la gare" = "Salpêtrière rue nationale",
+                "Salpêtrière" = "Salpêtrière rue pinel",
+                "Quartier de la gare" = "Salpêtrière clisson",
+                "Quartier de la gare" = "Salpêtrière docteur victor hutinel",
+                NULL = "Salpêtrière NA",
+                "Salpêtrière" = "Salpêtrière rue le brun",
+                "Salpêtrière" = "Salpêtrière rue pinel",
+                "Salpêtrière" = "Salpêtrière rue pirandello",
+                "Salpêtrière" = "Salpêtrière véronèse", 
+                "Salpêtrière" = "Salpêtrière", 
+                NULL = "NA rue auguste blanqui",
+                "Maison-Blanche" = "NA rue de la colonie",
+                NULL = "NA rue de la glacière",
+                NULL = "NA rue tolbiac",
+                "Maison-Blanche" = "Place d'Italie bobillot",
+                "Maison-Blanche" = "Place d'Italie rue des deux avenues",
+                "Quartier de la gare" = "Place d'Italie rue du docteur magnan",
+                "Maison-Blanche" = "Place d'Italie rue du moulinet",
+                "Salpêtrière" = "Salpêtrière rue bruant",
+                "Salpêtrière" = "Salpêtrière rue esquirol",
+                "Salpêtrière" = "Salpêtrière rue jenner",
+                "Salpêtrière" = "Salpêtrière rue michel peter",
+                "Salpêtrière" = "Salpêtrière rue rubens"
+        )
+
+#### Identifier les PCS ----
+
+## Réunir l'information sur le statut socio-professionnel
+QB$pcsinfo <- paste(QB$profession, QB$activite, QB$entreprise, sep = " / ")
+
+## Éliminer les variations typographiques 
+QB$pcsinfo <- str_to_lower(QB$pcsinfo)
+QB$pcsinfo <- as.factor(QB$pcsinfo)
+
+## Recodage de QB$pcsinfo en QB$pcs2 (PCS de niveau 2 : les catégories socio-
+## professionnelles)
+QB$pcs2 <- QB$pcsinfo %>%
+        fct_recode(
+                "46" = "assistante commerciale / à la retraite / non",
+                "84" = "aucune (étudiante) / étudiant·e / non",
+                "31" = "avocat / à votre compte / oui, de moins de 10 salariés",
+                "42" = "bibliothécaire / salarié·e du secteur public, fonctionnaire / non",
+                "37" = "cadre / salarié·e du secteur privé / non",
+                "37" = "cadre rh / salarié·e du secteur privé / non",
+                "37" = "cadre sup / salarié·e du secteur privé / non",
+                "22" = "commercant / salarié·e du secteur privé / oui, de moins de 10 salariés",
+                "38" = "contrôleur aérien / salarié·e du secteur public, fonctionnaire / non",
+                "42" = "documentaliste / salarié·e du secteur privé / non",
+                "84" = "étudiant / étudiant·e / non",
+                "84" = "etudiante / étudiant·e / non",
+                "84" = "étudiante / étudiant·e / non",
+                "38" = "ingénieur / à votre compte / oui, de moins de 10 salariés",
+                "38" = "ingénieur informaticien / à la retraite / non",
+                "38" = "ingénieur informatique / salarié·e du secteur privé / non",
+                "37" = "marketing / salarié·e du secteur privé / oui, de plus de 10 salariés",
+                NULL = "na / na / na",
+                "43" = "orthoptiste / salarié·e du secteur privé / non",
+                "63" = "peintre bâtiment / au chômage / non",
+                "35" = "professeur d’allemand / salarié·e du secteur public, fonctionnaire / non",
+                "42" = "professeure des écoles / à la retraite / non",
+                "37" = "responsable communication / au chômage / non",
+                NULL = "retraité / à la retraite / non",
+                NULL = "retraitee / à la retraite / non",
+                NULL = "retraitée / à la retraite / non",
+                "21" = "tailleur / à la retraite / non", 
+                "43" = "animatrice en périscolaire / salarié·e du secteur public, fonctionnaire / non",
+                NULL = "au chomage / na / non",
+                "37" = "chargée de communication / salarié·e du secteur privé / non",
+                "34" = "chercheur au cnrs (géographe) / salarié·e du secteur public, fonctionnaire / non",
+                "34" = "chercheure au cnrs (histoire) / salarié·e du secteur public, fonctionnaire / non",
+                NULL = "déscolarisé / au chômage / non",
+                "34" = "directrice de recherche crns / salarié·e du secteur public, fonctionnaire / non",
+                "54" = "employée de banque / salarié·e du secteur privé / non",
+                "42" = "enseignante / salarié·e du secteur public, fonctionnaire / non",
+                "84" = "etudiant / étudiant·e / non",
+                "84" = "étudiant / étudiant·e / non",
+                "84" = "étudiante / étudiant·e / non",
+                "45" = "fonctionnaire rédactrice territoriale / salarié·e du secteur public, fonctionnaire / non",
+                "43" = "infirmière / à la retraite / non",
+                "35" = "journaliste / à votre compte / non",
+                "46" = "maître d’hôtel / à la retraite / non",
+                "37" = "manageur dans un restaurant / salarié·e du secteur privé / non",
+                NULL = "monitencionneur / à la retraite / non",
+                "21" = "peintre en bâtiment / na / oui, de moins de 10 salariés",
+                "62" = "polyvalent d’imprimerie / à la retraite / non",
+                "42" = "professeur / salarié·e du secteur public, fonctionnaire / non",
+                "31" = "psychanalyste / à la retraite / non",
+                "31" = "psychologue / à la retraite / non",
+                "46" = "responsable merletting / salarié·e du secteur public, fonctionnaire / non",
+                NULL = "retraite / à la retraite / non",
+                NULL = "retraité de la fonction publique / à la retraite / non",
+                NULL = "retraitée / à la retraite / non",
+                "54" = "secretaire / à la retraite / non",
+                "54" = "secrétaire de direction / à la retraite / non",
+                "47" = "technicien industriel / au chômage / non",
+                "47" = "technicien informatique / salarié·e du secteur privé / non",
+                "34" = "universitaire / à la retraite / non",
+                "35" = "agente artistique / salarié·e du secteur privé / non",
+                "52" = "aide soignante / salarié·e du secteur privé / non",
+                "21" = "artisan / à la retraite / oui, de plus de 10 salariés",
+                "35" = "artiste peintre / au chômage / non",
+                "42" = "bibliothécaire / à la retraite / non",
+                "37" = "business analyst / salarié·e du secteur privé / non",
+                "37" = "cadre / salarié·e du secteur privé / non",
+                "22" = "chef de petite boite / à votre compte / oui, de moins de 10 salariés",
+                "56" = "concierge / salarié·e du secteur privé / non",
+                "35" = "dans les éditions scientifiques / à la retraite / na",
+                "37" = "demand planer / salarié·e du secteur privé / na",
+                "53" = "direction logement de la mairie / à la retraite / non",
+                "43" = "éducateur spécialisé / à la retraite / non",
+                "52" = "employé de musée / na / na",
+                "42" = "enseignant / salarié·e du secteur public, fonctionnaire / non",
+                "84" = "étudiant / étudiant·e / non",
+                "84" = "étudiante / étudiant·e / non",
+                "85" = "femme au foyer / na / non",
+                "22" = "fleuriste / à la retraite / non",
+                "38" = "gestionnaire de risques / salarié·e du secteur privé / non",
+                "31" = "homéopathe / à la retraite / non",
+                "43" = "infirmière / à la retraite / non",
+                "43" = "infirmière / salarié·e du secteur public, fonctionnaire / non",
+                "38" = "ingénieur / à la retraite / non",
+                "42" = "moniteur auto école / salarié·e du secteur privé / non",
+                NULL = "na / na / na",
+                "62" = "ouvrière en usine textile / à la retraite / non",
+                "46" = "responsable achat / salarié·e du secteur privé / na",
+                "53" = "secrétaire de collège / salarié·e du secteur public, fonctionnaire / non",
+                "47" = "technicien plasturgiste / salarié·e du secteur privé / non",
+                "38" = "urbaniste / salarié·e du secteur privé / non",
+                "42" = "animatrice / au chômage / non",
+                "22" = "antiquité / à votre compte / oui, de moins de 10 salariés",
+                "31" = "architecte / à votre compte / oui, de moins de 10 salariés",
+                "31" = "architecte / à votre compte / oui, de plus de 10 salariés",
+                "31" = "architecte / salarié·e du secteur privé / non",
+                "33" = "chargée de mission politiques de jeunesse / salarié·e du secteur privé / non",
+                "43" = "dans l’imagerie médicale / salarié·e du secteur privé / non",
+                "37" = "directrice d'un organisme de formation / à votre compte / oui, de moins de 10 salariés",
+                "35" = "éditeur / à la retraite / non",
+                "33" = "encadrant dans la fonction publique hospitalière / à la retraite / non",
+                "34" = "enseignante / salarié·e du secteur public, fonctionnaire / non",
+                "21" = "entrepreneur / à votre compte / oui, de moins de 10 salariés",
+                "84" = "etudiant / étudiant·e / non",
+                "84" = "étudiant / étudiant·e / non",
+                "84" = "étudiante / étudiant·e / non",
+                "56" = "femme de ménage / salarié·e du secteur privé / non",
+                "38" = "informaticien / salarié·e du secteur privé / non",
+                "38" = "ingénieur / au chômage / non",
+                "35" = "journaliste / à votre compte / non",
+                "37" = "marketing culturel / à la retraite / non",
+                "31" = "médecin généraliste / à votre compte / non",
+                "34" = "pharmacienne / à la retraite / non",
+                "35" = "photographe / à la retraite / non",
+                "42" = "professeure des écoles / salarié·e du secteur public, fonctionnaire / non",
+                "31" = "psychologue / salarié·e du secteur public, fonctionnaire / non",
+                NULL = "retraite / à la retraite / non",
+                NULL = "retraitée / à la retraite / non",
+                "56" = "serveuse / salarié·e du secteur privé / non",
+                "53" = "surveillant / salarié·e du secteur privé / non",
+                "55" = "vendeuse / salarié·e du secteur privé / non",
+                "53" = "vigile / salarié·e du secteur privé / non", 
+                "45" = "administration / salarié·e du secteur public, fonctionnaire / non",
+                "31" = "avocat / salarié·e du secteur privé / non",
+                "37" = "cadre / salarié·e du secteur privé / non",
+                "55" = "caissier / salarié·e du secteur privé / non",
+                "64" = "chauffeur livreur / salarié·e du secteur privé / non",
+                "64" = "conducteur de bus / salarié·e du secteur privé / non",
+                "46" = "conseiller en assurance / salarié·e du secteur privé / non",
+                "34" = "enseignante / salarié·e du secteur public, fonctionnaire / non",
+                "84" = "étudiant / étudiant·e / non",
+                "84" = "etudiante / étudiant·e / non",
+                "84" = "étudiante / étudiant·e / non",
+                "43" = "infirmière / salarié·e du secteur public, fonctionnaire / non",
+                "38" = "ingénieur / salarié·e du secteur privé / non",
+                "35" = "journaliste / salarié·e du secteur privé / na",
+                "34" = "médecin / salarié·e du secteur public, fonctionnaire / non",
+                "34" = "néphrologue / salarié·e du secteur public, fonctionnaire / non",
+                NULL = "personne âgé / salarié·e du secteur public, fonctionnaire / non",
+                "55" = "prêt à porter / salarié·e du secteur privé / non",
+                "42" = "professeur des écoles / salarié·e du secteur public, fonctionnaire / non",
+                "34" = "recherche / salarié·e du secteur public, fonctionnaire / non",
+                "22" = "restauration / à votre compte / na",
+                "NULL" = "retraite / à la retraite / non",
+                "NULL" = "retraité / à la retraite / non",
+                "55" = "vendeuse / salarié·e du secteur privé / non",
+                "35" = "administrateur d’un orchestre / salarié·e du secteur privé / non",
+                NULL = "agent commercial / à la retraite / non", #trop flou pour conclure
+                "34" = "biologiste / salarié·e du secteur public, fonctionnaire / non",
+                "37" = "cadre d'entreprise / salarié·e du secteur privé / non",
+                "43" = "chargée d’accueil et de secrétariat dans un centre social / salarié·e du secteur privé / non",
+                "46" = "communicant / salarié·e du secteur privé / non",
+                "22" = "conseil à rêver / à votre compte / oui, de moins de 10 salariés",
+                "31" = "conseil / salarié·e du secteur privé / non",
+                "43" = "coordinateur en centre social / salarié·e du secteur privé / non",
+                "43" = "coordinatrice de projets enfance-parentalité dans un centre social / salarié·e du secteur privé / non",
+                "34" = "doctorant / salarié·e du secteur public, fonctionnaire / non",
+                "34" = "enseignant d’anglais à l’université / salarié·e du secteur public, fonctionnaire / non",
+                "34" = "enseignant / à la retraite / non", #On peut supposer agrégé ou certifié dans un collège ou lycée
+                NULL = "enseignant / à votre compte / oui, de moins de 10 salariés", #Incohérent
+                "34" = "enseignant / salarié·e du secteur public, fonctionnaire / non", #On peut supposer agrégé ou certifié dans un collège ou lycée
+                "84" = "etudiant / étudiant·e / non",
+                "84" = "étudiant / étudiant·e / non",
+                "84" = "étudiante en chimie / gestion / étudiant·e / non",
+                "84" = "étudiante en graphisme / étudiant·e / oui, de moins de 10 salariés", #Etudiant ou à son compte?
+                "84" = "etudiante / étudiant·e / non",
+                "84" = "étudiante / étudiant·e / non",
+                NULL = "fonctionnaire de mairie / salarié·e du secteur public, fonctionnaire / non", #Pas assez précis
+                "22" = "graphiste / à votre compte / oui, de moins de 10 salariés",
+                "81" = "jamais travaillé / à la retraite / non",
+                NULL = "lycéen / étudiant·e / non", #Impossible à coder puisque lycéen
+                "37" = "manager / salarié·e du secteur privé / non", #Trop flou
+                "56" = "nourrice / na / non",
+                "34" = "prof en collège / salarié·e du secteur public, fonctionnaire / non", #On peut supposer qu'il est certifié
+                "43" = "puéricultrice / à la retraite / non",
+                "37" = "responsable comptable / salarié·e du secteur privé / non", #On peut supposer cadre de la comptabilité, car "responsable" et salaire élevé
+                NULL = "retraité cadre / à la retraite / non", #On ne peut pas aller plus loin que la PCS - Nous avons mis 3 plutôt que NA, sinon il allait disparaitre dans le GSP
+                NULL = "retraité de la restauration / à la retraite / non", #On ne peut pas déterminer quel poste dans la restauration (ouvrier, employé, PI? Mais salaire faible)
+                "47" = "retraitée de technicienne de paye / à la retraite / non",
+                NULL = "sans emploi / à la retraite / non",
+                "22" = "accessoiriste floral / à la retraite / non",
+                "47" = "analyste quantitatif / salarié·e du secteur privé / non", 
+                "22" = "antiquaire / à la retraite / non", 
+                "31" = "architecte designer / à votre compte / oui, de moins de 10 salariés", 
+                "46" = "assistante de direction / à la retraite / non",
+                "31" = "avocat / à votre compte / oui, de plus de 10 salariés", 
+                "55" = "caissière / salarié·e du secteur privé / non", 
+                "22" = "commerçant / à votre compte / oui, de moins de 10 salariés",
+                "63" = "cuisinier en restaurant / à la retraite / non", 
+                "35" = "designer / à la retraite / non", 
+                "37" = "directrice rh / salarié·e du secteur privé / non",
+                "42" = "documentaliste / à la retraite / non", 
+                "84" = "étudiant / étudiant·e / non", 
+                "52" = "femme de ménage / salarié·e du secteur privé / non",
+                "52" = "femme de ménage / salarié·e du secteur public, fonctionnaire / non", 
+                NULL = "fonctionnaire / salarié·e du secteur public, fonctionnaire / non", 
+                "38" = "ingénieur informatique / salarié·e du secteur privé / non", 
+                "84" = "lycéenne / étudiant·e / non", 
+                "10" = "maraîcher / à votre compte / oui, de moins de 10 salariés",
+                "34" = "professeure de philosophie / à la retraite / non",
+                "35" = "rédactrice free lance / à votre compte / oui, de moins de 10 salariés",
+                "82" = "retraité / à la retraite / non",
+                NULL = "sans emploi / au chômage / non",
+                "38" = "startup / à votre compte / oui, de moins de 10 salariés",
+                "84" = "étudiant / étudiant·e / non",
+                "84" = "étudiante / étudiant·e / non", 
+                NULL = "retraité / à la retraite / non", 
+                NULL = "retraitée / à la retraite / non", 
+                "37" = "agent immobilier / salarié·e du secteur privé / non",
+                "31" = "architecte / à la retraite / non", 
+                "46" = "assistant en ressources humaines / à la retraite / non", 
+                "46" = "assistante de direction / salarié·e du secteur privé / non",
+                "31" = "avocat / à votre compte / oui, de moins de 10 salariés", 
+                "31" = "avocate / salarié·e du secteur privé / non", 
+                "46" = "conseiller bancaire / salarié·e du secteur privé / non",
+                "21" = "cordonnier / à votre compte / oui, de moins de 10 salariés", 
+                "22" = "éducatrice canin / à votre compte / oui, de moins de 10 salariés", 
+                "22" = "fleuriste / à la retraite / non", 
+                "43" = "infirmière / à la retraite / non",
+                "84" = "lycéen / étudiant·e / non", 
+                "84" = "lycéenne / étudiant·e / non", 
+                "31" = "médecin généraliste / salarié·e du secteur privé / non", 
+                "34" = "professeur d'anglais / salarié·e du secteur public, fonctionnaire / non", 
+                "42" = "professeur des écoles / salarié·e du secteur public, fonctionnaire / non",
+                "55" = "vendeuse / salarié·e du secteur privé / non", 
+                "33" = "inspectrice / salarié·e du secteur public, fonctionnaire / non",
+                "63" = "ouvrier du bâtiment / salarié·e du secteur privé / non",
+                "54" = "agent de banque retraité / à la retraite / non",
+                NULL = "agent de perception / salarié·e du secteur privé / non",
+                "35" = "artiste / à la retraite / non",
+                NULL = "assistante / salarié·e du secteur public, fonctionnaire / oui, de plus de 10 salariés",
+                "46" = "assistante de direction / salarié·e du secteur public, fonctionnaire / non",
+                "31" = "avocat / à votre compte / oui, de moins de 10 salariés",
+                "37" = "banquier / salarié·e du secteur privé / non",
+                "56" = "barista / na / non",
+                "42" = "bibliothécaire / salarié·e du secteur public, fonctionnaire / non",
+                "62" = "btp / salarié·e du secteur privé / non",
+                "33" = "cadre dans la fonction publique territoriale / salarié·e du secteur public, fonctionnaire / non",
+                "37" = "chargée de communication / à votre compte / oui, de moins de 10 salariés",
+                NULL = "cheffe de projet - fonction publique / salarié·e du secteur public, fonctionnaire / non",
+                "34" = "chercheur / salarié·e du secteur public, fonctionnaire / non",
+                "56" = "coiffeuse / à votre compte / oui, de moins de 10 salariés",
+                "84" = "collégienne / étudiant·e / non",
+                "37" = "data scientist / salarié·e du secteur privé / oui, de plus de 10 salariés",
+                "63" = "électricien / salarié·e du secteur privé / non",
+                "56" = "employer de maison / salarié·e du secteur privé / non",
+                "84" = "etudiant / étudiant·e / non", 
+                                "84" = "étudiant.e / étudiant·e / non",
+                                "84" = "étudiante en chimie/gestion / étudiant·e / non",
+                                "84" = "étudiante en kiné / étudiant·e / non",
+                                "84" = "étudiants en baccalauréat professionnel de la photographie / étudiant·e / non",
+                                "84" = "85",
+                                "38" = "ingénieur d’etudes / salarié·e du secteur public, fonctionnaire / non",
+                                "84" = "je ne travaille pas / étudiant·e / non",
+                                "84" = "je suis étudiante / étudiant·e / non",
+                                "35" = "journaliste / salarié·e du secteur privé / non",
+                                NULL = "na / au chômage / non",
+                                "84" = "na / étudiant·e / non",
+                                "43" = "sage-femme / salarié·e du secteur privé / non",
+                                "54" = "secrétaire / à la retraite / non",
+                                "34" = "sociologue / salarié·e du secteur privé / non",
+                "34" = "sociologue / na / non"
+        )
+
+## Recodage de QB$pcs2 en QB$pcs1 (PCS niveau 1 : Groupes socioprofessionels)
+QB$pcs1 <- QB$pcs2 %>%
+  fct_recode(
+    "2" = "22",
+    "3" = "35",
+    "4" = "45",
+    "5" = "54",
+    "3" = "37",
+    "5" = "52",
+    "4" = "47",
+    "4" = "42",
+    "4" = "43",
+    "3" = "31",
+    "2" = "21",
+    "4" = "46",
+    "8" = "84",
+    "3" = "34",
+    "6" = "62",
+    "3" = "33",
+    "5" = "55",
+    "6" = "64",
+    "5" = "56",
+    "3" = "38",
+    "6" = "63",
+    "5" = "53",
+    "8" = "85",
+    "8" = "81",
+    "1" = "10"
+  )
+
+#On recode éventuellement avec les intitulés
+QB$pcs2_int <- QB$pcs2 %>%
+        fct_recode(
+                "Cadres du secteur privé" = "37",
+                "Cadres moyens du secteur public" = "45",
+                "Cadres moyens du secteur public" = "46",
+                NULL = "51",
+                "Métiers de la culture" = "35",
+                "Policiers, militaires, agents de sécurité" = "53",
+                "Commerçants" = "22",
+                "Service direct aux personnes" = "56",
+                "Métiers de la santé et du travail social" = "43",
+                "Professions libérales" = "31",
+                "Ingénieurs" = "38",
+                "Professeurs des écoles et formateurs" = "42",
+                NULL = "85",
+                "Employés administratifs du secteur public" = "52",
+                "Métiers de l'enseignement et de la recherche" = "34",
+                "Ouvriers qualifiés de l'artisanat" = "63",
+                "Étudiants" = "84",
+                "Chefs d'entreprise (+10)" = "23",
+                "Artisans" = "21",
+                "Employés du commerce" = "55",
+                "Conducteurs d'engin" = "64",
+                "Cadres du secteur public" = "33",
+                "Employés administratifs du secteur public" = "54",
+                "Techniciens" = "47",
+                NULL = "32",
+                "Ouvriers qualifiés de l'industrie" = "62",
+                NULL = "81",
+                "Agriculteur" = "10"
+        )
+freq(QB$pcs2_int, sort = "dec")
+
+## Recodage de QB$pcs1 en QB$pcs1_int
+QB$pcs1_int <- QB$pcs1 %>%
+        fct_recode(
+                "Cadres et professions intellectuelles supérieures" = "3",
+                "Professions intermédiaires" = "4",
+                "Employés" = "5",
+                "Artisans, commerçants et chefs d'entreprise" = "2",
+                "Étudiants" = "8",
+                "Ouvriers" = "6", 
+                "Agriculteurs" = "1"
+        )
+freq(QB$pcs1_int, sort = "dec")
