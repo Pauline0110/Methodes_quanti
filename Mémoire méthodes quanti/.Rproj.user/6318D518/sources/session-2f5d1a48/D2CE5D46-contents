@@ -1,46 +1,8 @@
-# RECODAGE HABITUEL ---- 
-
-# Installation des extensions 
-library(questionr)
-library(readxl)
-library(tidyverse)
-library(esquisse)
-library(FactoMineR)
-library(explor)
-library(dplyr)
-
-############################################################################################
-# Je vais créer un lien Github pour que t'aies le code en direct quand je le modifie       #
-# qu'on n'ait pas à s'envoyer 15 mails                                                     #
-# Je vais voir si je peux t'ajouter en tant que collaboratrice du Github comme ça tu       #
-# pourras me demander d'appliquer les changements du code quand tu le modifieras et comme  #
-# ça on aura toujours le même code pour pas se perdre                                      #
-############################################################################################
-
-###############################################################################
-# LANCER LE SCRIPT INITIALISATION COMME CA NOS VARIABLES AURONT LE MÊME NOM   #
-###############################################################################
-
-# On change le répertoire de travail : On va chercher le chemin dans le "plus" de fichier 
-setwd("~/Desktop/CPES 2 /Méthodes quantitatives /SEMESTRE 2 /R - Méthode quanti 13ème")
-
-# Importe la base de données 
-QBon <- read_excel("QBon.xlsx")
-QBoff <- read_excel("QBoff.xlsx")
-
-setwd("~/Desktop/CPES 2 /R ")
-
-#Réunir les deux bases de données 
-QB <- bind_rows(QBon,QBoff)
-
-# On uniformise les NA 
-QB <- replace_with_na_all(QB, condition = ~.x%in% common_na_strings)
-
-# Pour toutes les mettre en variable catégorielle 
-QB <- modify_if(QB, is.character, as.factor)
-
-# On veut supprimer les colonnes de time 
-QB <- select(QB, -ends_with("Time"))
+#################################################################
+# Ce script nécessite le lancement des scripts suivants :       #
+# QB - importer, organiser et nettoyer la base de données et    #
+# QB - Ajouts de variables et recodages généraux                #
+#################################################################
 
 # Créer une base de données avec que les questions qui nous intéresse ----
 
