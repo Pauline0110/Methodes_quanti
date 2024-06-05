@@ -1,0 +1,422 @@
+####################################################################
+# Ce script nécessite le lancement des scripts suivants :          #
+# 01_QB - importer, organiser et nettoyer la base de données,      #
+# 02_QB - Ajouts de variables et recodages généraux et             #
+# 03_Recodage de nos variables                                     #
+####################################################################
+
+# RECODAGE : selon mode souterrain ou plein air ----
+# Notre variable est : Base_All$reponses_rec2 
+
+#Recodage 
+## Recoding Base_All$reponses_rec1.x into Base_All$reponses_rec1.x_rec
+Base_All$Transport_pleinair <- Base_All$reponses_rec1.x %>%
+  fct_recode(
+    "Plein air" = "tram, bus",
+    "Sous-terrain" = "métro, RER",
+    "Mixte" = "métro, RER / tram, bus",
+    "Plein air" = "voiture",
+    "Mixte" = "voiture/ métro, RER",
+    "Plein air" = "scooter, moto (+ autre)",
+    "Plein air" = "vélo",
+    "Plein air" = "vélo / tram, bus ou voiture",
+    "Mixte" = "vélo / métro, RER",
+    "Plein air" = "vélo / voiture",
+    "Plein air" = "marche",
+    "Plein air" = "marche / tram, bus ou voiture",
+    "Mixte" = "marche / métro, RER",
+    "Plein air" = "marche / voiture",
+    "Plein air" = "marche / scooter, moto",
+    "Plein air" = "marche / vélo"
+  )
+
+table(Base_All$Transport_pleinair)
+# le problème c'est que sous-terrain on a peu d'effectifs => On a que les full métro/ RER, après 
+# c'est des mixtes 
+
+# faisons quelques test pour voir la pertinence du recodage 
+# Avec attachement 
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_pleinair, attachement_classe)
+
+ggplot(Base_All_NA) +
+  aes(x = attachement_classe, fill = Transport_pleinair) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_pleinair, Base_All$attachement_classe )) #p-value moyen (11%)
+
+# Avec rester 
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_pleinair, rester)
+
+ggplot(Base_All_NA) +
+  aes(x = rester, fill = Transport_pleinair) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_pleinair, Base_All$rester )) #p-value nulle (48%)
+
+# Avec gps - seul résultat intéressant 
+
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_pleinair, gps)
+
+ggplot(Base_All_NA) +
+  aes(x = gps, fill = Transport_pleinair) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_pleinair, Base_All$gps )) #p-value top (0.001%)
+
+# Voyons si on met les mixtes en sous-terrain 
+Base_All$Transport_pleinair2 <- Base_All$reponses_rec1.x %>%
+  fct_recode(
+    "Plein air" = "tram, bus",
+    "Sous-terrain" = "métro, RER",
+    "Sous-terrain" = "métro, RER / tram, bus",
+    "Plein air" = "voiture",
+    "Sous-terrain" = "voiture/ métro, RER",
+    "Plein air" = "scooter, moto (+ autre)",
+    "Plein air" = "vélo",
+    "Plein air" = "vélo / tram, bus ou voiture",
+    "Sous-terrain" = "vélo / métro, RER",
+    "Plein air" = "vélo / voiture",
+    "Plein air" = "marche",
+    "Plein air" = "marche / tram, bus ou voiture",
+    "Sous-terrain" = "marche / métro, RER",
+    "Plein air" = "marche / voiture",
+    "Plein air" = "marche / scooter, moto",
+    "Plein air" = "marche / vélo"
+  )
+
+table(Base_All$Transport_pleinair2)
+#Effectifs équilibrés 
+
+# Avec rester : 
+chisq.test(table(Base_All$Transport_pleinair2, Base_All$rester )) #p-value nulle (29%)
+
+# Avec attachement : 
+chisq.test(table(Base_All$Transport_pleinair2, Base_All$attachement_classe )) #p-value nulle (12%)
+
+# Avec GPS : 
+chisq.test(table(Base_All$Transport_pleinair2, Base_All$gps )) #p-value top (0.003%)
+
+# CONCLUSION : le recodage ne semble pas hyper pertinent pour analyser l'attachement :'(
+
+
+# RECODAGE : Moyens de transports collectifs ou individuel -----
+## Recoding Base_All$reponses_rec1.x into Base_All$reponses_rec1.x_rec
+Base_All$Transport_individuel <- Base_All$reponses_rec1.x %>%
+  fct_recode(
+    "collectif" = "tram, bus",
+    "collectif" = "métro, RER",
+    "collectif" = "métro, RER / tram, bus",
+    "individuel" = "voiture",
+    "mixte" = "voiture/ métro, RER",
+    "individuel" = "scooter, moto (+ autre)",
+    "individuel" = "vélo",
+    "mixte" = "vélo / tram, bus ou voiture",
+    "mixte" = "vélo / métro, RER",
+    "individuel" = "vélo / voiture",
+    "individuel" = "marche",
+    "mixte" = "marche / tram, bus ou voiture",
+    "mixte" = "marche / métro, RER",
+    "individuel" = "marche / voiture",
+    "individuel" = "marche / scooter, moto",
+    "individuel" = "marche / vélo"
+  )
+
+
+# faisons quelques test pour voir la pertinence du recodage 
+# Avec attachement 
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_individuel, attachement_classe)
+
+ggplot(Base_All_NA) +
+  aes(x = attachement_classe, fill = Transport_individuel) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_individuel, Base_All$attachement_classe )) #p-value nulle (53%)
+
+# Avec rester 
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_individuel, rester)
+
+ggplot(Base_All_NA) +
+  aes(x = rester, fill = Transport_individuel) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_individuel, Base_All$rester )) #p-value nulle (41%)
+
+# Avec gps
+
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_individuel, gps)
+
+ggplot(Base_All_NA) +
+  aes(x = gps, fill = Transport_individuel) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_individuel, Base_All$gps )) #p-value moyen (10%)
+
+
+# c'est pas non plus un recodage hyper pertinent 
+
+# Si on enlève mixte voyons 
+
+Base_All$Transport_individuel2 <- Base_All$reponses_rec1.x %>%
+  fct_recode(
+    "collectif" = "tram, bus",
+    "collectif" = "métro, RER",
+    "collectif" = "métro, RER / tram, bus",
+    "individuel" = "voiture",
+    "NA" = "voiture/ métro, RER",
+    "individuel" = "scooter, moto (+ autre)",
+    "individuel" = "vélo",
+    "NA" = "vélo / tram, bus ou voiture",
+    "NA" = "vélo / métro, RER",
+    "individuel" = "vélo / voiture",
+    "individuel" = "marche",
+    "NA" = "marche / tram, bus ou voiture",
+    "NA" = "marche / métro, RER",
+    "individuel" = "marche / voiture",
+    "individuel" = "marche / scooter, moto",
+    "individuel" = "marche / vélo"
+  )
+
+# Graphiques 
+# Avec attachement 
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_individuel2, attachement_classe)
+
+ggplot(Base_All_NA) +
+  aes(x = attachement_classe, fill = Transport_individuel2) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_individuel2, Base_All$attachement_classe )) #p-value nulle (43%)
+
+# Avec rester 
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_individuel, rester)
+
+ggplot(Base_All_NA) +
+  aes(x = rester, fill = Transport_individuel) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_individuel2, Base_All$rester )) #p-value nulle (27%)
+
+# Avec gps
+
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_individuel2, gps)
+
+ggplot(Base_All_NA) +
+  aes(x = gps, fill = Transport_individuel2) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_individuel2, Base_All$gps )) #p-value ça va (5%)
+
+# Recodage non concluant non plus 
+
+# RECODAGE : 5 modalités et les autres sous la catégorie "autre"  ----
+
+
+## Recoding Base_All$reponses_rec1.x into Base_All$Transport_classe
+Base_All$Transport_classe <- Base_All$reponses_rec1.x %>%
+  fct_recode(
+    NULL = "tram, bus",
+    NULL = "voiture",
+    NULL = "voiture/ métro, RER",
+    NULL = "scooter, moto (+ autre)",
+    "marche / vélo" = "vélo",
+    NULL = "vélo / tram, bus ou voiture",
+    NULL = "vélo / voiture",
+    "marche / vélo" = "marche",
+    NULL = "marche / voiture",
+    NULL = "marche / scooter, moto"
+  )
+
+
+# Graphiques 
+# Avec attachement 
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_classe, attachement_classe)
+
+ggplot(Base_All_NA) +
+  aes(x = Transport_classe, fill = attachement_classe) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_classe, Base_All$attachement_classe )) #p-value ça va (5%)
+
+# Avec rester 
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_classe, rester)
+
+ggplot(Base_All_NA) +
+  aes(x = Transport_classe, fill = rester) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_classe, Base_All$rester )) #p-value ça va (8%)
+
+# Avec gps
+
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_classe, gps)
+
+ggplot(Base_All_NA) +
+  aes(x = Transport_classe, fill = gps) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$Transport_classe, Base_All$gps )) #p-value très bonne (0.3%)
+
+# Recodage le plus intéressant jusqu'à maintenant 
+#petit tableau de fréquences pour voir 
+lprop(table(Base_All$Transport_classe, Base_All$attachement_classe))
+lprop(table(Base_All$Transport_classe, Base_All$rester))
+
+
+# RECODAGE : marche comme variable centrale ----
+## Recoding Base_All$reponses_rec1.x into Base_All$Transport_marche
+Base_All$Transport_marche <- Base_All$reponses_rec1.x %>%
+  fct_recode(
+    "Non" = "tram, bus",
+    "Non" = "métro, RER",
+    "Non" = "métro, RER / tram, bus",
+    "Non" = "voiture",
+    "Non" = "voiture/ métro, RER",
+    "Non" = "scooter, moto (+ autre)",
+    "Non" = "vélo",
+    "Non" = "vélo / tram, bus ou voiture",
+    "Non" = "vélo / métro, RER",
+    "Non" = "vélo / voiture",
+    "Oui" = "marche",
+    "Oui" = "marche / tram, bus ou voiture",
+    "Oui" = "marche / métro, RER",
+    "Oui" = "marche / voiture",
+    "Oui" = "marche / scooter, moto",
+    "Oui" = "marche / vélo"
+  )
+
+# Regardons la pertinence : 
+lprop(table(Base_All$Transport_marche, Base_All$attachement_classe))
+# Pas d'intérêt 
+lprop(table(Base_All$Transport_marche, Base_All$rester))
+# parmi les personnes qui veulent rester petit sur-représentation des gens qui marchent 
+
+# Faisons quelques chi-2 
+chisq.test(table(Base_All$Transport_marche, Base_All$attachement_classe )) #p-value nulle (43%)
+chisq.test(table(Base_All$Transport_marche, Base_All$rester )) #p-value bonne (2%)
+
+# Petit graphique 
+Base_All_NA <- Base_All %>%
+  drop_na(Transport_marche, rester)
+# Jsp pourquoi mais j'arrive pas trop à enlever les NA 
+
+ggplot(Base_All_NA) +
+  aes(x = Transport_marche, fill = rester) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+# Bon petit lien quand même 
+
+# RECODAGE : marche et vélo ----
+## Recoding Base_All$reponses_rec1.x into Base_All$Transport_MarcheVélo
+Base_All$Transport_MarcheVélo <- Base_All$reponses_rec1.x %>%
+  fct_recode(
+    "Non" = "tram, bus",
+    "Non" = "métro, RER",
+    "Non" = "métro, RER / tram, bus",
+    "Non" = "voiture",
+    "Non" = "voiture/ métro, RER",
+    "Non" = "scooter, moto (+ autre)",
+    "Oui" = "vélo",
+    "Oui" = "vélo / tram, bus ou voiture",
+    "Oui" = "vélo / métro, RER",
+    "Oui" = "vélo / voiture",
+    "Oui" = "marche",
+    "Oui" = "marche / tram, bus ou voiture",
+    "Oui" = "marche / métro, RER",
+    "Oui" = "marche / voiture",
+    "Oui" = "marche / scooter, moto",
+    "Oui" = "marche / vélo"
+  )
+
+
+chisq.test(table(Base_All$Transport_MarcheVélo, Base_All$attachement_classe )) #p-value nulle (55%)
+
+
+
+
+
+#CONCLUSION : 
+# Le seul recodage dont on peut tirer quelque chose est le recodage en 5 catégories 
+
+
+
+# Idée : les 3 modalités principales sont marche, métro/ RER, tram/bus ----
+# Essayer de faire qu'avec ces catégories : qui correspondent à 01, 06 et 07 
+## Comme les QB07Q01[S00X] sont dans QB on recode vite fait attachement dans QB 
+QB$attachement_classe <- QB$attachement %>%
+  as.character() %>%
+  fct_recode(
+    "[0-4]" = "0",
+    "[0-4]" = "1",
+    "[0-4]" = "2",
+    "[0-4]" = "3",
+    "[0-4]" = "3.5",
+    "[0-4]" = "4",
+    "[5-7]" = "5",
+    "[5-7]" = "5.5",
+    "[5-7]" = "6",
+    "[5-7]" = "6.5",
+    "[5-7]" = "7",
+    "[8-10]" = "7.5",
+    "[8-10]" = "8",
+    "[8-10]" = "8.5",
+    "[8-10]" = "9",
+    "[8-10]" = "9.5",
+    "[8-10]" = "10",
+    "[8-10]" = "13"
+  )
+
+## Reordering QB$attachement_classe
+QB$attachement_classe <- QB$attachement_classe %>%
+  fct_relevel(
+    "[8-10]", "[5-7]", "[0-4]"
+  )
+
+chisq.test(table(QB$`B07Q01[SQ001]`, QB$attachement_classe )) #p-value nulle (24%)
+chisq.test(table(QB$`B07Q01[SQ006]`, QB$attachement_classe )) #p-value ça va (5%) 
+chisq.test(table(QB$`B07Q01[SQ007]`, QB$attachement_classe )) #p-value nulle (68%)
+
+# C'est intéressant que pour métro / RER 
+ggplot(QB) +
+  aes(x = attachement_classe, fill = `B07Q01[SQ001]`) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+# plus t'es attaché, plus t'utilise le RER c'est contraire à nos hypothèses mais intéressant 
+
