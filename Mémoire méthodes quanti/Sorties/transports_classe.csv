@@ -1,8 +1,8 @@
-"";"n";"%";"val%"
-"marche / mÃ©tro, RER";73;23,2;27,9
-"marche / vÃ©lo";55;17,5;21
-"mÃ©tro, RER / tram, bus";47;14,9;17,9
-"marche / tram, bus ou voiture";44;14;16,8
-"mÃ©tro, RER";26;8,3;9,9
-"vÃ©lo / mÃ©tro, RER";17;5,4;6,5
-"NA";53;16,8;NA
+;Effectifs;Pourcentage;Pourcentage sans NA
+marche / métro, RER;73;23,2;27,9
+marche / vélo;55;17,5;21
+métro, RER / tram, bus;47;14,9;17,9
+marche / tram, bus ou voiture;44;14;16,8
+métro, RER;26;8,3;9,9
+vélo / métro, RER;17;5,4;6,5
+NA;53;16,8;NA

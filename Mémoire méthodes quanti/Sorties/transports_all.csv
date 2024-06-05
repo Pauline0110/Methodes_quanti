@@ -1,18 +1,18 @@
-"";"n";"%";"val%"
-"marche / mÃ©tro, RER";73;23,2;23,9
-"mÃ©tro, RER / tram, bus";47;14,9;15,4
-"marche / tram, bus ou voiture";44;14;14,4
-"mÃ©tro, RER";26;8,3;8,5
-"marche";25;7,9;8,2
-"marche / vÃ©lo";24;7,6;7,8
-"vÃ©lo / mÃ©tro, RER";17;5,4;5,6
-"marche / voiture";11;3,5;3,6
-"tram, bus";8;2,5;2,6
-"voiture";6;1,9;2
-"vÃ©lo";6;1,9;2
-"marche / scooter, moto";5;1,6;1,6
-"voiture/ mÃ©tro, RER";4;1,3;1,3
-"scooter, moto (+ autre)";4;1,3;1,3
-"vÃ©lo / tram, bus ou voiture";3;1;1
-"vÃ©lo / voiture";3;1;1
-"NA";9;2,9;NA
+;Effectifs;Pourcentage;Pourcentage sans NA
+marche / métro, RER;73;23,2;23,9
+métro, RER / tram, bus;47;14,9;15,4
+marche / tram, bus ou voiture;44;14;14,4
+métro, RER;26;8,3;8,5
+marche;25;7,9;8,2
+marche / vélo;24;7,6;7,8
+vélo / métro, RER;17;5,4;5,6
+marche / voiture;11;3,5;3,6
+tram, bus;8;2,5;2,6
+voiture;6;1,9;2
+vélo;6;1,9;2
+marche / scooter, moto;5;1,6;1,6
+voiture/ métro, RER;4;1,3;1,3
+scooter, moto (+ autre);4;1,3;1,3
+vélo / tram, bus ou voiture;3;1;1
+vélo / voiture;3;1;1
+NA;9;2,9;NA
