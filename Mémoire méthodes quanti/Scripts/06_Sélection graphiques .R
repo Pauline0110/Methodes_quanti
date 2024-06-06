@@ -97,3 +97,58 @@ Base_All %>%
 chisq.test(Base_All$bruits, Base_All$Transport_pleinair2) #nulle 72%
 
 #in any case on peut faire des tableaux pour éviter de remplir le doc de graphiques
+esquisser(viewer="browser")
+
+#bruits et activité
+Base_All %>%
+  filter(!is.na(activite)) %>%
+  filter(!is.na(bruits)) %>%
+  ggplot() +
+  aes(x = activite, fill = bruits) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+chisq.test(table(Base_All$bruits, Base_All$activite)) #0,15 p value donc pas terrible mais le prof a dit que c'était possible d'en parler
+cramer.v(table(Base_All$bruits, Base_All$activite))
+
+#odeurs et pcs
+Base_All %>%
+  filter(!is.na(activite)) %>%
+  filter(!is.na(pcs1_int)) %>%
+  filter(!is.na(bruits)) %>%
+  ggplot() +
+  aes(x = pcs1_int, fill = odeurs) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+chisq.test(table(Base_All$pcs1_int, Base_All$odeurs))
+cramer.v(table(Base_All$pcs1_int, Base_All$odeurs))
+
+#bruits et mobilité extérieure, je pense que ça peut se voir dans l'acm
+Base_All %>%
+  filter(!is.na(activite)) %>%
+  filter(!is.na(pcs1_int)) %>%
+  filter(!is.na(bruits)) %>%
+  ggplot() +
+  aes(x = mobi_ext, fill = bruits) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$bruits, Base_All$mobi_ext))
+cramer.v(table(Base_All$bruits, Base_All$mobi_ext))
+
+#gps et fréquence ballades
+Base_All %>%
+  filter(!is.na(revenu)) %>%
+  filter(!is.na(odeurs)) %>%
+  ggplot() +
+  aes(x = freq_ballade, fill = gps) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  theme_minimal()
+
+chisq.test(table(Base_All$gps, Base_All$freq_ballade))
+cramer.v(table(Base_All$gps, Base_All$freq_ballade))
+
+
